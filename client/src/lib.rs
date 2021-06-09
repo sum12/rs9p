@@ -113,4 +113,21 @@ impl Client {
         let _ = self.resp_map.lock().unwrap().remove(&tag);
         fcall
     }
+
+    pub fn take_tag(&mut self) -> u16 {
+        match self.tags.lock().unwrap().pop() {
+            None => {
+                self.last_tag += 1;
+                self.last_tag
+            }
+            Some(x) => x,
+        }
+    }
+
+    pub fn return_tag(&self, tag: u16) {
+        if tag != 0 {
+            self.tags.lock().unwrap().push(tag);
+            self.resp_map.lock().unwrap().remove(&tag);
+        }
+    }
 }
