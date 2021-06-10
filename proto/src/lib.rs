@@ -7,6 +7,7 @@ mod tests {
 }
 
 pub mod attach;
+pub mod clunk;
 pub mod fcall;
 pub mod header;
 pub mod qid;
