@@ -12,3 +12,4 @@ pub mod header;
 pub mod qid;
 pub mod utils;
 pub mod version;
+pub mod walk;
