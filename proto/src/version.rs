@@ -36,7 +36,7 @@ impl fcall::Fcall for TRVersion {
     }
     fn compose(&self) -> Option<Vec<u8>> {
         let length = 4 + 1 + 2 + 4 + (2 + self.version.len());
-        let mut buffer: Vec<u8> = Vec::with_capacity(length as usize);
+        let mut buffer: Vec<u8> = Vec::with_capacity(length);
 
         // let buf: &mut &[u8] = &mut &buffer[..];
 
