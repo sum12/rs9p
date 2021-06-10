@@ -30,7 +30,7 @@ impl fcall::Fcall for Qid {
         let mut buffer: Vec<u8> = Vec::with_capacity(13 as usize);
         buffer.push(self.qtype);
         buffer.extend(&self.vers.to_le_bytes());
-        buffer.extend(&self.vers.to_le_bytes());
+        buffer.extend(&self.uid.to_le_bytes());
         Some(buffer)
     }
     fn parse(&mut self, buf: &mut &[u8]) {
