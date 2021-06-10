@@ -139,4 +139,16 @@ impl Client {
     pub fn return_fid(&self, fid: u32) {
         self.fids.lock().unwrap().push(fid);
     }
+
+    pub fn clunk(&mut self, fid: u32) {
+        if fid != 0 {
+            let mut clunk: Box<proto::clunk::TClunk> = Default::default();
+            let mut h: Header = Default::default();
+            h.htag = self.take_tag();
+            clunk.set_header(h);
+            clunk.fid = fid;
+            self.get_response(clunk);
+            self.return_fid(fid);
+        }
+    }
 }
