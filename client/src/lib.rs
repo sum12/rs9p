@@ -98,6 +98,13 @@ pub fn parse_call(input: &mut TcpStream) -> Option<Fcallbox> {
     }
 }
 
+fn take<T: std::ops::AddAssign + Copy>(from: &Mutex<Vec<T>>, x: &mut T, y: T) -> T {
+    from.lock().unwrap().pop().unwrap_or_else(|| {
+        *x += y;
+        *x
+    })
+}
+
 impl Client {
     pub fn get_response(&mut self, fcall: Fcallbox) -> Option<Fcallbox> {
         let (tx, rx): (Sender<Fcallbox>, Receiver<Fcallbox>) = mpsc::channel();
@@ -114,14 +121,12 @@ impl Client {
         fcall
     }
 
+    pub fn take_fid(&mut self) -> u32 {
+        take(&self.fids, &mut self.last_fid, 1)
+    }
+
     pub fn take_tag(&mut self) -> u16 {
-        match self.tags.lock().unwrap().pop() {
-            None => {
-                self.last_tag += 1;
-                self.last_tag
-            }
-            Some(x) => x,
-        }
+        take(&self.tags, &mut self.last_tag, 1)
     }
 
     pub fn return_tag(&self, tag: u16) {
@@ -129,5 +134,9 @@ impl Client {
             self.tags.lock().unwrap().push(tag);
             self.resp_map.lock().unwrap().remove(&tag);
         }
+    }
+
+    pub fn return_fid(&self, fid: u32) {
+        self.fids.lock().unwrap().push(fid);
     }
 }
