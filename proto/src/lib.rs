@@ -25,6 +25,8 @@ mod version;
 pub use version::*;
 mod walk;
 pub use walk::*;
+mod open;
+pub use open::*;
 
 pub type Fcallbox = Box<dyn fcall::Fcall>;
 pub enum Message {
