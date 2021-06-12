@@ -25,14 +25,14 @@ impl fmt::Display for TAttach {
 }
 
 impl fcall::Fcall for TAttach {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
         self.header.get_tag()
     }
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.fid = utils::read_le_u32(buf);
         self.afid = utils::read_le_u32(buf);
         self.uname = utils::read_string(buf).unwrap();
@@ -46,12 +46,14 @@ impl fcall::Fcall for TAttach {
         buffer.extend(&length.to_le_bytes());
         buffer.push(self.header.htype.unwrap() as u8);
         buffer.extend(&self.header.htag.to_le_bytes());
+
         buffer.extend(&self.fid.to_le_bytes());
         buffer.extend(&self.afid.to_le_bytes());
         buffer.extend(&u16::to_le_bytes(self.uname.len().try_into().unwrap()));
         buffer.extend(self.uname.as_bytes());
         buffer.extend(&u16::to_le_bytes(self.aname.len().try_into().unwrap()));
         buffer.extend(self.aname.as_bytes());
+        // println!("{}", buffer.len());
         Some(buffer)
     }
 }
@@ -68,14 +70,14 @@ impl fmt::Display for RAttach {
     }
 }
 impl fcall::Fcall for RAttach {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
         self.header.get_tag()
     }
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.qid.parse(buf);
     }
 

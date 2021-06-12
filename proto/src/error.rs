@@ -17,9 +17,7 @@ impl fmt::Display for RError {
 }
 
 impl fcall::Fcall for RError {
-    type Header = header::Header;
-
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -38,6 +36,7 @@ impl fcall::Fcall for RError {
         Some(buffer)
     }
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.ename = utils::read_string(buf).unwrap();
     }
 }

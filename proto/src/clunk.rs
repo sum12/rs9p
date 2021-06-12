@@ -16,8 +16,7 @@ impl fmt::Display for TClunk {
 }
 
 impl fcall::Fcall for TClunk {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -40,10 +39,12 @@ impl fcall::Fcall for TClunk {
     }
 
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.fid = utils::read_le_u32(buf);
     }
 }
 
+#[derive(Default)]
 pub struct RClunk {
     pub header: header::Header,
 }
@@ -55,8 +56,7 @@ impl fmt::Display for RClunk {
 }
 
 impl fcall::Fcall for RClunk {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -76,5 +76,7 @@ impl fcall::Fcall for RClunk {
         Some(buffer)
     }
 
-    fn parse(&mut self, _buf: &mut &[u8]) {}
+    fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
+    }
 }

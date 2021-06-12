@@ -21,8 +21,7 @@ impl fmt::Display for Qid {
 }
 
 impl fcall::Fcall for Qid {
-    type Header = header::Header;
-    fn set_header(&mut self, _header: Self::Header) {}
+    fn set_header(&mut self, _header: header::Header) {}
     fn get_tag(&self) -> u16 {
         unimplemented!()
     }

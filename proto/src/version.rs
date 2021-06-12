@@ -1,4 +1,4 @@
-use crate::fcall;
+use crate::fcall::Fcall;
 use crate::header;
 use crate::utils;
 // use std::convert::TryFrom;
@@ -8,7 +8,7 @@ use std::fmt;
 #[derive(Default)]
 pub struct TRVersion {
     pub header: header::Header,
-    pub msize: usize,
+    pub msize: u32,
     pub version: String,
 }
 
@@ -26,9 +26,8 @@ impl fmt::Display for TRVersion {
     }
 }
 
-impl fcall::Fcall for TRVersion {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+impl Fcall for TRVersion {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -42,17 +41,26 @@ impl fcall::Fcall for TRVersion {
 
         buffer.extend(&u32::to_le_bytes(length as u32));
         buffer.push(self.header.htype.unwrap() as u8);
-        buffer.extend(&u16::to_le_bytes(self.header.htag));
-        buffer.extend(&u32::to_le_bytes(self.msize as u32));
+        buffer.extend(&self.header.htag.to_le_bytes());
+        buffer.extend(&self.msize.to_le_bytes());
         buffer.extend(&u16::to_le_bytes(self.version.len().try_into().unwrap()));
         buffer.extend(self.version.as_bytes());
         Some(buffer)
     }
     fn parse(&mut self, buf: &mut &[u8]) {
-        self.msize = utils::read_le_u32(buf) as usize;
+        self.header.parse(buf);
+        self.msize = utils::read_le_u32(buf);
         self.version = utils::read_string(buf).unwrap();
     }
 }
+
+// impl From<&mut &[u8]> for TRVersion {
+//     fn from(s: &mut &[u8]) -> TRVersion {
+//         let mut ret: Self = Default::default();
+//         ret.parse(s);
+//         ret
+//     }
+// }
 //
 // impl TryFrom<&mut [u8]> for TRVersion {
 //     type Error = String;
@@ -62,3 +70,5 @@ impl fcall::Fcall for TRVersion {
 //         Some(buf)
 //     }
 // }
+//
+//

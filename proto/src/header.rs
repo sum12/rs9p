@@ -23,8 +23,8 @@ impl fmt::Display for Header {
 }
 
 impl fcall::Fcall for Header {
-    type Header = Self;
-    fn set_header(&mut self, _header: Self::Header) {}
+    fn set_header(&mut self, _header: Header) {}
+
     fn get_tag(&self) -> u16 {
         self.htag
     }

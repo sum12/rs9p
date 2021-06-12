@@ -5,6 +5,7 @@ use crate::utils;
 use std::convert::TryInto;
 use std::fmt;
 
+#[derive(Default)]
 pub struct TWalk {
     pub header: header::Header,
     pub fid: u32,
@@ -17,19 +18,19 @@ impl fmt::Display for TWalk {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "twalk: [{}, fid: {}, newfid: {}, nwname: {}, wname: <{}>]",
+            "twalk: [{}, fid: {}, newfid: {}, nwname: {}, wname: <{}{}>]",
             self.header,
             self.fid,
             self.newfid,
             self.nwname,
-            self.wname.join(",")
+            self.wname[0],
+            self.wname[1..].join(",")
         )
     }
 }
 
 impl fcall::Fcall for TWalk {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -37,7 +38,9 @@ impl fcall::Fcall for TWalk {
     }
 
     fn compose(&self) -> Option<Vec<u8>> {
-        let length = 4 + 1 + 2 + 4 + 4 + 2;
+        let mut length = 4 + 1 + 2 + 4 + 4 + 2;
+        self.wname.iter().for_each(|s| length += 2 + s.len());
+
         let mut buffer: Vec<u8> = Vec::with_capacity(length);
 
         // let buf: &mut &[u8] = &mut &buffer[..];
@@ -46,11 +49,11 @@ impl fcall::Fcall for TWalk {
         buffer.push(self.header.htype.unwrap() as u8);
         buffer.extend(&u16::to_le_bytes(self.header.htag));
 
-        buffer.extend(self.fid.to_le_bytes().iter());
-        buffer.extend(self.newfid.to_le_bytes().iter());
-        buffer.extend(self.nwname.to_le_bytes().iter());
+        buffer.extend(&self.fid.to_le_bytes());
+        buffer.extend(&self.newfid.to_le_bytes());
+        buffer.extend(&self.nwname.to_le_bytes());
 
-        let _ = self.wname.iter().map(|name| {
+        self.wname.iter().for_each(|name| {
             buffer.extend(&u16::to_le_bytes(name.len().try_into().unwrap()));
             buffer.extend(name.as_bytes());
         });
@@ -59,16 +62,18 @@ impl fcall::Fcall for TWalk {
     }
 
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.fid = utils::read_le_u32(buf);
         self.newfid = utils::read_le_u32(buf);
         self.nwname = utils::read_le_u16(buf);
         self.wname = Vec::with_capacity(self.nwname.into());
-        for i in 0..self.nwname {
+        for _ in 0..self.nwname {
             self.wname.push(utils::read_string(buf).unwrap());
         }
     }
 }
 
+#[derive(Default)]
 pub struct RWalk {
     pub header: header::Header,
     pub nwqid: u16,
@@ -91,8 +96,7 @@ impl fmt::Display for RWalk {
 }
 
 impl fcall::Fcall for RWalk {
-    type Header = header::Header;
-    fn set_header(&mut self, header: Self::Header) {
+    fn set_header(&mut self, header: header::Header) {
         self.header = header;
     }
     fn get_tag(&self) -> u16 {
@@ -120,6 +124,7 @@ impl fcall::Fcall for RWalk {
     }
 
     fn parse(&mut self, buf: &mut &[u8]) {
+        self.header.parse(buf);
         self.nwqid = utils::read_le_u16(buf);
         self.wqid = Vec::with_capacity(self.nwqid.into());
         for _ in 0..self.nwqid {
