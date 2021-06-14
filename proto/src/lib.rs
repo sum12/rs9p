@@ -27,6 +27,8 @@ mod walk;
 pub use walk::*;
 mod open;
 pub use open::*;
+mod write;
+pub use write::*;
 
 pub type Fcallbox = Box<dyn fcall::Fcall>;
 pub enum Message {
@@ -41,6 +43,8 @@ pub enum Message {
     RError(RError),
     Header(Header),
     Qid(Qid),
+    TOpen(TOpen),
+    ROpen(ROpen),
 }
 
 macro_rules! implement {
@@ -93,6 +97,8 @@ implement!(RClunk, RClunk);
 implement!(RError, RError);
 implement!(Header, Header);
 implement!(Qid, Qid);
+implement!(TOpen, TOpen);
+implement!(ROpen, ROpen);
 impl Message {
     pub fn new(h: header::HeaderType, buf: Vec<u8>) -> Message {
         match h {
@@ -104,6 +110,8 @@ impl Message {
             HeaderType::Tclunk => TClunk::from(buf).into(),
             HeaderType::Rclunk => RClunk::from(buf).into(),
             HeaderType::Rerror => RError::from(buf).into(),
+            HeaderType::Topen => TOpen::from(buf).into(),
+            HeaderType::Ropen => ROpen::from(buf).into(),
             _ => todo!(),
         }
     }
