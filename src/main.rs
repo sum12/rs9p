@@ -44,8 +44,8 @@ fn main() {
         _ => panic!("cloud not attach"),
     }
 
-    let r = client.walkfid("/static".to_string());
-    println!("{}", r.unwrap());
+    let r = client.open("/static".to_string(), proto::Mode::Oread);
+    println!("{:?}", r.unwrap());
 
     println!("done !");
 }
