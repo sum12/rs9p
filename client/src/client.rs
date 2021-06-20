@@ -119,8 +119,9 @@ impl Client {
             Ok(_) => println!("{}", fcall),
             _ => panic!("error writing {}", fcall),
         };
-        let fcall = rx.recv().ok();
-        Some(fcall.unwrap().into())
+        let fcall = rx.recv().unwrap();
+        println!("{}", fcall.extract());
+        Some(fcall.into())
     }
 
     pub fn take_fid(&mut self) -> u32 {
@@ -205,6 +206,7 @@ impl Client {
 
         match self.get_response(open) {
             Some(Message::ROpen(x)) => Some(file::File {
+                client: self,
                 fid: newfid,
                 offset: 0,
                 iounit: if x.iounit == 0 { u32::MAX } else { x.iounit },

@@ -29,8 +29,11 @@ mod open;
 pub use open::*;
 mod write;
 pub use write::*;
+mod read;
+pub use read::*;
 
 pub type Fcallbox = Box<dyn fcall::Fcall>;
+
 pub enum Message {
     TAttach(TAttach),
     RAttach(RAttach),
@@ -45,6 +48,10 @@ pub enum Message {
     Qid(Qid),
     TOpen(TOpen),
     ROpen(ROpen),
+    TWrite(TWrite),
+    RWrite(RWrite),
+    TRead(TRead),
+    RRead(RRead),
 }
 
 macro_rules! implement {
@@ -99,7 +106,34 @@ implement!(Header, Header);
 implement!(Qid, Qid);
 implement!(TOpen, TOpen);
 implement!(ROpen, ROpen);
+implement!(TWrite, TWrite);
+implement!(RWrite, RWrite);
+implement!(TRead, TRead);
+implement!(RRead, RRead);
+
 impl Message {
+    pub fn extract(&self) -> Box<&dyn Fcall> {
+        match self {
+            Message::TAttach(x) => Box::new(x),
+            Message::RAttach(x) => Box::new(x),
+            Message::TClunk(x) => Box::new(x),
+            Message::RClunk(x) => Box::new(x),
+            Message::TWalk(x) => Box::new(x),
+            Message::RWalk(x) => Box::new(x),
+            Message::TVersion(x) => Box::new(x),
+            Message::RVersion(x) => Box::new(x),
+            Message::RError(x) => Box::new(x),
+            Message::Header(x) => Box::new(x),
+            Message::Qid(x) => Box::new(x),
+            Message::TOpen(x) => Box::new(x),
+            Message::ROpen(x) => Box::new(x),
+            Message::TWrite(x) => Box::new(x),
+            Message::RWrite(x) => Box::new(x),
+            Message::TRead(x) => Box::new(x),
+            Message::RRead(x) => Box::new(x),
+        }
+    }
+
     pub fn new(h: header::HeaderType, buf: Vec<u8>) -> Message {
         match h {
             HeaderType::Tversion | HeaderType::Rversion => TRVersion::from(buf).into(),
@@ -112,6 +146,10 @@ impl Message {
             HeaderType::Rerror => RError::from(buf).into(),
             HeaderType::Topen => TOpen::from(buf).into(),
             HeaderType::Ropen => ROpen::from(buf).into(),
+            HeaderType::Twrite => TWrite::from(buf).into(),
+            HeaderType::Rwrite => RWrite::from(buf).into(),
+            HeaderType::Tread => TRead::from(buf).into(),
+            HeaderType::Rread => RRead::from(buf).into(),
             _ => todo!(),
         }
     }

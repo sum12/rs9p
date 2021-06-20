@@ -4,6 +4,7 @@ use proto;
 use proto::HeaderType;
 use proto::Message;
 use std::default::Default;
+use std::io::Read;
 use std::net::TcpStream;
 
 fn main() {
@@ -22,7 +23,6 @@ fn main() {
     let rversion = client.get_response(version);
     match rversion {
         Some(Message::RVersion(x)) => {
-            println!("{}", x);
             client.msize = x.msize;
         }
         _ => panic!("version mismatch"),
@@ -40,12 +40,22 @@ fn main() {
     };
 
     match client.get_response(attach) {
-        Some(Message::RAttach(x)) => println!("{}", x),
+        Some(Message::RAttach(_x)) => {}
         _ => panic!("cloud not attach"),
     }
 
-    let r = client.open("/static".to_string(), proto::Mode::Oread);
-    println!("{:?}", r.unwrap());
+    let fpath = "/static".to_string();
+    let mut r = match client.open(fpath.clone(), proto::Mode::Oread) {
+        Some(r) => r,
+        _ => panic!("Nope; cant open file"),
+    };
+    let mut buffer = String::new();
+    match r.read_to_string(&mut buffer) {
+        Ok(c) => {
+            println!("{}", buffer)
+        }
+        _ => panic!("Nope; cant read"),
+    }
 
     println!("done !");
 }

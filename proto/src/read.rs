@@ -93,6 +93,6 @@ impl fcall::Fcall for RRead {
     fn parse(&mut self, buf: &mut &[u8]) {
         self.header.parse(buf);
         self.count = utils::read_le_u32(buf);
-        self.data = utils::read_string(buf).unwrap().as_bytes().to_vec();
+        self.data = buf.to_vec();
     }
 }
